@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Home Page</h1>
+        <p>Welcome to the home page! {{ username }}</p>
+        <form method="POST" action="/generate_token" class="mb-3">
+            <button type="submit" class="btn btn-primary">Generate Token</button>
+        </form>
+        <form method="POST" action="/migrate" class="mb-3">
+            <button type="submit" class="btn btn-primary">Migrate</button>
+        </form>
+        <form method="POST" action="/fetch_logs" class="mb-3">
+            <div class="mb-3">
+                <label for="userSelect" class="form-label">Select User</label>
+                <select id="userSelect" name="userSelect" class="form-select">
+                    <option value="get_user_info">User Info</option>
+                    <option value="get_database_info">Database Info</option>
+                    <option value="get_database_tables">All Tables</option>
+                    <option value="get_query_logs">Query Logs</option>
+                    <option value="get_query_stats">Query Stats</option>
+                    <option value="get_log_table">Migration Logs</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Fetch Logs</button>
+        </form>
+        {% if auth_key and remaining_hours %}
+        <h2>Generated Token</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Expires In</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ auth_key }}</td>
+                    <td>{{ remaining_hours }} hours</td>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
