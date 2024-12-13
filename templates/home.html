@@ -8,45 +8,171 @@
 <body>
     <div class="container">
         <h1 class="mt-5">Home Page</h1>
-        <p>Welcome to the home page! {{ username }}</p>
+        <p>Welcome to the home page, {{ username }}!</p>
+
+        <!-- Generate Token Form -->
         <form method="POST" action="/generate_token" class="mb-3">
             <button type="submit" class="btn btn-primary">Generate Token</button>
         </form>
-        <form method="POST" action="/migrate" class="mb-3">
-            <button type="submit" class="btn btn-primary">Migrate</button>
-        </form>
-        <form method="POST" action="/fetch_logs" class="mb-3">
-            <div class="mb-3">
-                <label for="userSelect" class="form-label">Select User</label>
-                <select id="userSelect" name="userSelect" class="form-select">
-                    <option value="get_user_info">User Info</option>
-                    <option value="get_database_info">Database Info</option>
-                    <option value="get_database_tables">All Tables</option>
-                    <option value="get_query_logs">Query Logs</option>
-                    <option value="get_query_stats">Query Stats</option>
-                    <option value="get_log_table">Migration Logs</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Fetch Logs</button>
-        </form>
-        {% if auth_key and remaining_hours %}
+
+        <!-- Token Information -->
+        {% if auth_key and remaining_hours is not none %}
         <h2>Generated Token</h2>
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Token</th>
-                    <th>Expires In</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>{{ auth_key }}</td>
-                    <td>{{ remaining_hours }} hours</td>
                 </tr>
             </tbody>
         </table>
         {% endif %}
+
+
+        <!-- Fetch Logs Form -->
+        <form method="POST" action="/fetch_logs" class="mb-3">
+            <div class="mb-3">
+                <label for="userSelect" class="form-label">Select User</label>
+                <select id="userSelect" name="userSelect" class="form-select">
+                    <option value="get_user_info" {% if selected_value == "get_user_info" %}selected{% endif %}>User Info</option>
+                    <option value="get_database_info" {% if selected_value == "get_database_info" %}selected{% endif %}>Database Info</option>
+                    <option value="get_database_tables" {% if selected_value == "get_database_tables" %}selected{% endif %}>All Tables</option>
+                    <option value="get_query_logs" {% if selected_value == "get_query_logs" %}selected{% endif %}>Query Logs</option>
+                    <option value="get_log_table" {% if selected_value == "get_log_table" %}selected{% endif %}>Migration Logs</option>
+                    <option value="get_query_stats" {% if selected_value == "get_query_stats" %}selected{% endif %}>Query Stats</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Fetch Logs</button>
+        </form>
+
+        <!-- Rendered Output -->
+        <h2>{{ header }}</h2>
+        {% if selected_value == "get_query_logs" %}
+        {% if data and data|length > 0 %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Operation Type</th>
+                    <th>Query</th>
+                    <th>Rows Affected</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in data.logs %}
+                <tr>
+                    <td>{{ log.operation_type }}</td>
+                    <td>{{ log.query }}</td>
+                    <td>{{ log.rows_affected }}</td>
+                    <td>{{ log.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No query logs available.</p>
+        {% endif %}
+        {% elif selected_value == "get_log_table" %}
+        {% if data %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Log</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in data.logs %}
+                <tr>
+                    <td>{{ log.create_timestamp }}</td>
+                    <td>{{ log.logs }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        {% elif data %}
+        {% if selected_value == "get_user_info" %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Is Admin</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ data.email }}</td>
+                    <td>{{ data.is_admin }}</td>
+                    <td>{{ data.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% elif selected_value == "get_database_info" %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ data.created_at }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% elif selected_value == "get_database_tables" %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Table Name</th>
+                    <th>Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for table in data.Tables %}
+                <tr>
+                    <td>{{ table[0] }}</td>
+                    <td>{{ table[1] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif selected_value == "get_query_stats" %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Read Operations</th>
+                    <th>Rows Read</th>
+                    <th>Rows Written</th>
+                    <th>Write Operations</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ data.stats.read_operations }}</td>
+                    <td>{{ data.stats.rows_read }}</td>
+                    <td>{{ data.stats.rows_written }}</td>
+                    <td>{{ data.stats.write_operations }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
+        {% endif %}
+
+        <!-- Error Message -->
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
     </div>
+
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
